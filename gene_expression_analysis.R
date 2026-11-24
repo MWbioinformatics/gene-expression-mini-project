@@ -71,6 +71,7 @@ table(colData(airway)$cell)
 head(counts[, 1:4])
 
 # Calculate total counts per sample
+# Provides an indication of assigned sequencing reads
 colSums(counts)
 
 # Visualise total counts per sample
@@ -83,10 +84,26 @@ barplot(
 )
 
 # Compare count distributions across samples
+# Log2 transformation makes highly skewed counts easier to visualise
+# Adding 1 prevents taking the logarithm of zero
 boxplot(
   log2(counts + 1),
   las = 2,
   cex.axis = 0.7,
   ylab = "Log2(count + 1)",
   main = "Gene count distributions across samples"
+)
+
+# Count detected genes per sample
+# TRUE means a gene has at least one assigned read
+# colSums counts the TRUE values for each sample
+colSums(counts > 0)
+
+# Visualise detected genes per sample
+barplot(
+  colSums(counts > 0),
+  las = 2,
+  cex.names = 0.7,
+  ylab = "Number of detected genes",
+  main = "Genes detected per sample"
 )
