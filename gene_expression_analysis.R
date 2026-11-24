@@ -240,3 +240,86 @@ ggplot(res_df, aes(x = log2FoldChange, y = -log10(padj),
 # 2,610 were upregulated and 2,224 were downregulated.
 # Volcano plot showed the expected V-shaped distribution.
 
+
+# DAY 7: BIOLOGICAL INTERPRETATION AND PROJECT DOCUMENTATION
+# ============================================================
+
+# Load human gene annotation database
+library(org.Hs.eg.db)
+library(AnnotationDbi)
+
+# Map Ensembl gene IDs to gene symbols
+res_df$gene_symbol <- mapIds(
+  org.Hs.eg.db,
+  keys = res_df$gene_id,
+  column = "SYMBOL",
+  keytype = "ENSEMBL",
+  multiVals = "first"
+)
+
+# Display the top 10 differentially expressed genes
+head(res_df[, c(
+  "gene_id",
+  "gene_symbol",
+  "baseMean",
+  "log2FoldChange",
+  "padj"
+)], 10)
+
+# Identify the top 10 downregulated genes
+downregulated <- res_df[
+  res_df$padj < 0.1 & res_df$log2FoldChange < 0,
+]
+
+# Sort by adjusted p-value
+downregulated <- downregulated[
+  order(downregulated$padj),
+]
+
+# Display top 10 downregulated genes
+head(downregulated[, c(
+  "gene_id",
+  "gene_symbol",
+  "baseMean",
+  "log2FoldChange",
+  "padj"
+)], 10)
+
+# Combine top upregulated and downregulated genes
+top_up <- head(res_df[res_df$padj < 0.1 &
+                        res_df$log2FoldChange > 0, ], 10)
+
+top_down <- head(downregulated, 10)
+
+top_genes <- rbind(top_up, top_down)
+
+# Select relevant columns
+top_genes <- top_genes[, c(
+  "gene_symbol",
+  "log2FoldChange",
+  "padj"
+)]
+
+# View final table
+top_genes
+
+# Add Ensembl IDs as an explicit column
+top_genes$gene_id <- rownames(top_genes)
+
+# Arrange columns
+top_genes <- top_genes[, c(
+  "gene_id",
+  "gene_symbol",
+  "log2FoldChange",
+  "padj"
+)]
+
+# Create results folder
+dir.create("results", showWarnings = FALSE)
+
+# Export results as CSV
+write.csv(
+  top_genes,
+  "results/top_20_differentially_expressed_genes.csv",
+  row.names = FALSE
+)
