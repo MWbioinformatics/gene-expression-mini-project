@@ -107,3 +107,43 @@ barplot(
   ylab = "Number of detected genes",
   main = "Genes detected per sample"
 )
+
+
+# DAY 4: DATA VISUALISATION WITH GGPLOT2
+# ============================================================
+
+# Create a summary table of sample-level information
+sample_qc <- data.frame(
+  sample = colnames(counts),
+  total_counts = colSums(counts),
+  detected_genes = colSums(counts > 0),
+  treatment = colData(airway)$dex,
+  cell_line = colData(airway)$cell
+)
+
+# Inspect the summary table
+sample_qc
+
+# Visualise total counts per sample using ggplot2
+ggplot(sample_qc, aes(x = sample, y = total_counts / 1e6, fill = treatment)) +
+  geom_col() +
+  labs(
+    title = "Total Assigned Counts per Sample",
+    x = "Sample",
+    y = "Total counts (millions)",
+    fill = "Treatment"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Visualise detected genes per sample
+ggplot(sample_qc, aes(x = sample, y = detected_genes, fill = treatment)) +
+  geom_col() +
+  labs(
+    title = "Detected Genes per Sample",
+    x = "Sample",
+    y = "Number of detected genes",
+    fill = "Treatment"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
