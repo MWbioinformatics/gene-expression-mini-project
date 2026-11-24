@@ -185,3 +185,58 @@ vsd <- vst(dds, blind = FALSE)
 
 # Generate PCA plot
 plotPCA(vsd, intgroup = c("dex", "cell"))
+
+
+# DAY 6: DIFFERENTIAL GENE EXPRESSION
+# ============================================================
+
+# Run differential expression analysis
+dds <- DESeq(dds)
+
+# Inspect the results
+resultsNames(dds)
+
+# Extract dexamethasone treatment results
+res <- results(dds, contrast = c("dex", "trt", "untrt"))
+
+# Summarise the results
+summary(res)
+
+# Convert results into a data frame
+res_df <- as.data.frame(res)
+
+# Add gene IDs as a column
+res_df$gene_id <- rownames(res_df)
+
+# Sort by adjusted p-value
+res_df <- res_df[order(res_df$padj), ]
+
+# Display the top 10 genes
+head(res_df, 10)
+
+# Create categories for differential expression
+res_df$significance <- "Not significant"
+
+res_df$significance[res_df$padj < 0.1 &
+                      res_df$log2FoldChange > 0] <- "Upregulated"
+
+res_df$significance[res_df$padj < 0.1 &
+                      res_df$log2FoldChange < 0] <- "Downregulated"
+
+# Create volcano plot
+ggplot(res_df, aes(x = log2FoldChange, y = -log10(padj),
+                   colour = significance)) +
+  geom_point(alpha = 0.5, size = 1) +
+  labs(
+    title = "Differential Gene Expression",
+    x = "Log2 Fold Change",
+    y = "-Log10 Adjusted P-value",
+    colour = "Expression"
+  ) +
+  theme_minimal()
+
+# Day 6 observations:
+# Identified 4,834 genes with adjusted p-value < 0.1.
+# 2,610 were upregulated and 2,224 were downregulated.
+# Volcano plot showed the expected V-shaped distribution.
+
