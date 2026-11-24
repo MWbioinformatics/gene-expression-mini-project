@@ -147,3 +147,41 @@ ggplot(sample_qc, aes(x = sample, y = detected_genes, fill = treatment)) +
   ) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+# DAY 5: NORMALISATION AND PCA
+# ============================================================
+
+# Create DESeq2 dataset
+dds <- DESeqDataSet(
+  airway,
+  design = ~ cell + dex
+)
+
+# Inspect the DESeq2 object
+dds
+
+# Remove genes with very low counts
+keep <- rowSums(counts(dds)) >= 10
+dds <- dds[keep, ]
+
+# Check remaining number of genes
+nrow(dds)
+
+# Estimate size factors for library-size normalisation
+dds <- estimateSizeFactors(dds)
+
+# Extract normalised counts
+normalised_counts <- counts(dds, normalized = TRUE)
+
+# Inspect the normalised count matrix
+head(normalised_counts)
+
+# Compare library size factors
+sizeFactors(dds)
+
+# Perform variance-stabilising transformation
+vsd <- vst(dds, blind = FALSE)
+
+# Generate PCA plot
+plotPCA(vsd, intgroup = c("dex", "cell"))
